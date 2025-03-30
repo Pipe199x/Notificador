@@ -1,0 +1,37 @@
+name: Ejecutar Notificador
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # Todos los días a las 8:00 UTC
+  workflow_dispatch:     # También ejecutable manualmente
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+
+    env:
+      REMITENTE_EMAIL: ${{ secrets.REMITENTE_EMAIL }}
+      CONTRASENA_EMAIL: ${{ secrets.CONTRASENA_EMAIL }}
+      DESTINATARIO_EMAIL: ${{ secrets.DESTINATARIO_EMAIL }}
+      LOGIN_USUARIO: ${{ secrets.LOGIN_USUARIO }}
+      LOGIN_CLAVE: ${{ secrets.LOGIN_CLAVE }}
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: |
+          pip install --upgrade pip
+          pip install selenium webdriver-manager
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
+
+      - name: Ejecutar script
+        run: python notificaciones.py

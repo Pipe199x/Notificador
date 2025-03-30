@@ -1,0 +1,65 @@
+[
+    {
+        "documento": "NDEB1",
+        "razon_social": "compaia mundial de seguros sa",
+        "fecha": "06/12/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "5.562.355,12"
+    },
+    {
+        "documento": "FEV337",
+        "razon_social": "compaia mundial de seguros sa",
+        "fecha": "04/12/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "415.639,63"
+    },
+    {
+        "documento": "NCRE21",
+        "razon_social": "compaia mundial de seguros sa",
+        "fecha": "04/12/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "415.639,63"
+    },
+    {
+        "documento": "FEV336",
+        "razon_social": "LA EQUIDAD SEGUROS GENERALES ORGANISMO COOPERATIVO",
+        "fecha": "21/11/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "7.669.094,23"
+    },
+    {
+        "documento": "FEV335",
+        "razon_social": "LA EQUIDAD SEGUROS GENERALES ORGANISMO COOPERATIVO",
+        "fecha": "24/10/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "10.312.848,21"
+    },
+    {
+        "documento": "FEV334",
+        "razon_social": "LA EQUIDAD SEGUROS DE VIDA ORGANISMO COOPERATIVO",
+        "fecha": "24/10/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "2.219.616,56"
+    },
+    {
+        "documento": "FEV333",
+        "razon_social": "compaia mundial de seguros sa",
+        "fecha": "17/10/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "415.639,63"
+    },
+    {
+        "documento": "FEV332",
+        "razon_social": "compaia mundial de seguros sa",
+        "fecha": "04/12/2024",
+        "estado": "Aceptado DIAN",
+        "total_factura": "2.933.754,60"
+    },
+    {
+        "documento": "No disponible",
+        "razon_social": "No disponible",
+        "fecha": "No disponible",
+        "estado": "No disponible",
+        "total_factura": "No disponible"
+    }
+]
