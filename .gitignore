@@ -6,6 +6,5 @@ __pycache__/
 # Archivos sensibles o de entorno
 .env
 *.env
-datos_enviados.json
 error_login.png
 error_documentos.png
