@@ -10,14 +10,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
-# Configuración (desde secretos)
+# 🔐 Variables de entorno (cargadas desde GitHub Secrets)
 REMITENTE_EMAIL = os.getenv("REMITENTE_EMAIL")
 CONTRASENA_EMAIL = os.getenv("CONTRASENA_EMAIL")
 DESTINATARIO_EMAIL = os.getenv("DESTINATARIO_EMAIL")
+LOGIN_USUARIO = os.getenv("LOGIN_USUARIO")
+LOGIN_CLAVE = os.getenv("LOGIN_CLAVE")
 LOGIN_URL = "https://fe.libellum.co/"
-USUARIO = os.getenv("LOGIN_USUARIO")
-CLAVE = os.getenv("LOGIN_CLAVE")
 REGISTRO_DATOS = "datos_enviados.json"
+
 
 def enviar_email(asunto, mensaje):
     try:
@@ -33,17 +34,20 @@ def enviar_email(asunto, mensaje):
 
         print("📧 Correo enviado correctamente.")
     except Exception as e:
-        print("❌ Error enviando el correo:", e)
+        print("❌ Error al enviar correo:", e)
+
 
 def cargar_datos_enviados():
     if os.path.exists(REGISTRO_DATOS):
-        with open(REGISTRO_DATOS, "r") as f:
+        with open(REGISTRO_DATOS, "r", encoding="utf-8") as f:
             return json.load(f)
     return []
 
+
 def guardar_datos_enviados(datos):
-    with open(REGISTRO_DATOS, "w") as f:
-        json.dump(datos, f, indent=2)
+    with open(REGISTRO_DATOS, "w", encoding="utf-8") as f:
+        json.dump(datos, f, indent=2, ensure_ascii=False)
+
 
 def iniciar_sesion():
     options = Options()
@@ -55,17 +59,20 @@ def iniciar_sesion():
     driver = webdriver.Chrome(service=service, options=options)
 
     driver.get(LOGIN_URL)
+
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Documento']"))
     )
-    driver.find_element(By.XPATH, "//input[@placeholder='Documento']").send_keys(USUARIO)
-    driver.find_element(By.XPATH, "//input[@placeholder='Clave de Acceso']").send_keys(CLAVE)
+    driver.find_element(By.XPATH, "//input[@placeholder='Documento']").send_keys(LOGIN_USUARIO)
+    driver.find_element(By.XPATH, "//input[@placeholder='Clave de Acceso']").send_keys(LOGIN_CLAVE)
     driver.find_element(By.XPATH, "//button[text()='Ingresar']").click()
 
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "page-content"))
     )
+    print("✅ Inicio de sesión exitoso.")
     return driver
+
 
 def navegar_y_extraer(driver):
     WebDriverWait(driver, 10).until(
@@ -90,28 +97,38 @@ def navegar_y_extraer(driver):
             })
     return datos
 
+
 if __name__ == "__main__":
     try:
+        # 1. Iniciar sesión y extraer datos
         driver = iniciar_sesion()
         datos_extraidos = navegar_y_extraer(driver)
         driver.quit()
 
-        anteriores = cargar_datos_enviados()
-        nuevos = [d for d in datos_extraidos if d not in anteriores]
+        # 2. Cargar el registro de documentos ya enviados
+        datos_enviados = cargar_datos_enviados()
 
-        if nuevos:
-            mensaje = "🆕 Nuevos documentos:\n\n"
-            for d in nuevos:
+        # 3. Detectar nuevos documentos
+        nuevos_datos = [d for d in datos_extraidos if d not in datos_enviados]
+
+        if nuevos_datos:
+            # 4. Construir mensaje
+            mensaje = "🆕 Nuevos documentos encontrados:\n\n"
+            for d in nuevos_datos:
                 mensaje += (
-                    f"Documento: {d['documento']}\n"
-                    f"Razón Social: {d['razon_social']}\n"
-                    f"Fecha: {d['fecha']}\n"
-                    f"Estado: {d['estado']}\n"
-                    f"Total Factura: {d['total_factura']}\n\n"
+                    f"📄 Documento: {d['documento']}\n"
+                    f"🏢 Razón Social: {d['razon_social']}\n"
+                    f"📅 Fecha: {d['fecha']}\n"
+                    f"✅ Estado DIAN: {d['estado']}\n"
+                    f"💰 Total Factura: {d['total_factura']}\n\n"
                 )
+
+            # 5. Enviar correo
             enviar_email("Notificación de Nuevos Documentos", mensaje)
-            guardar_datos_enviados(datos_extraidos)
+
+            # 6. Actualizar el JSON con todos los documentos conocidos
+            guardar_datos_enviados(datos_enviados + nuevos_datos)
         else:
-            print("📭 No hay nuevos documentos.")
+            print("📭 No hay documentos nuevos para enviar.")
     except Exception as e:
         print("🚨 Error general:", e)
