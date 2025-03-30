@@ -17,15 +17,15 @@ jobs:
       LOGIN_CLAVE: ${{ secrets.LOGIN_CLAVE }}
 
     steps:
-      - name: Clonar repositorio
+      - name: 📥 Clonar repositorio
         uses: actions/checkout@v3
 
-      - name: Configurar Python
+      - name: ⚙️ Configurar Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Instalar dependencias
+      - name: 📦 Instalar dependencias
         run: |
           pip install --upgrade pip
           pip install selenium webdriver-manager
@@ -33,5 +33,15 @@ jobs:
           sudo apt-get install -y chromium-browser chromium-chromedriver
           sudo ln -s /usr/bin/chromedriver /usr/local/bin/chromedriver
 
-      - name: Ejecutar script
+      - name: 🚀 Ejecutar script
         run: python notificaciones.py
+
+      - name: 📤 Commit y push de datos_enviados.json
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add datos_enviados.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "📦 Actualizar datos enviados automáticamente"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
