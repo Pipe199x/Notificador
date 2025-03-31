@@ -1,5 +1,4 @@
 import os
-import json
 import smtplib
 from email.mime.text import MIMEText
 from selenium import webdriver
@@ -9,15 +8,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from bd import crear_tabla, documento_ya_enviado, insertar_documento
 
-# 🔐 Variables de entorno (cargadas desde GitHub Secrets)
+# 🔐 Variables de entorno
 REMITENTE_EMAIL = os.getenv("REMITENTE_EMAIL")
 CONTRASENA_EMAIL = os.getenv("CONTRASENA_EMAIL")
 DESTINATARIO_EMAIL = os.getenv("DESTINATARIO_EMAIL")
 LOGIN_USUARIO = os.getenv("LOGIN_USUARIO")
 LOGIN_CLAVE = os.getenv("LOGIN_CLAVE")
 LOGIN_URL = "https://fe.libellum.co/"
-REGISTRO_DATOS = "datos_enviados.json"
 
 
 def enviar_email(asunto, mensaje):
@@ -35,18 +34,6 @@ def enviar_email(asunto, mensaje):
         print("📧 Correo enviado correctamente.")
     except Exception as e:
         print("❌ Error al enviar correo:", e)
-
-
-def cargar_datos_enviados():
-    if os.path.exists(REGISTRO_DATOS):
-        with open(REGISTRO_DATOS, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
-
-
-def guardar_datos_enviados(datos):
-    with open(REGISTRO_DATOS, "w", encoding="utf-8") as f:
-        json.dump(datos, f, indent=2, ensure_ascii=False)
 
 
 def iniciar_sesion():
@@ -100,19 +87,19 @@ def navegar_y_extraer(driver):
 
 if __name__ == "__main__":
     try:
+        # 🧱 Crear tabla si no existe
+        crear_tabla()
+
         # 1. Iniciar sesión y extraer datos
         driver = iniciar_sesion()
         datos_extraidos = navegar_y_extraer(driver)
         driver.quit()
 
-        # 2. Cargar el registro de documentos ya enviados
-        datos_enviados = cargar_datos_enviados()
-
-        # 3. Detectar nuevos documentos
-        nuevos_datos = [d for d in datos_extraidos if d not in datos_enviados]
+        # 2. Detectar nuevos documentos (no presentes en la base de datos)
+        nuevos_datos = [d for d in datos_extraidos if not documento_ya_enviado(d['documento'])]
 
         if nuevos_datos:
-            # 4. Construir mensaje
+            # 3. Armar mensaje
             mensaje = "🆕 Nuevos documentos encontrados:\n\n"
             for d in nuevos_datos:
                 mensaje += (
@@ -122,12 +109,10 @@ if __name__ == "__main__":
                     f"✅ Estado DIAN: {d['estado']}\n"
                     f"💰 Total Factura: {d['total_factura']}\n\n"
                 )
+                insertar_documento(d)
 
-            # 5. Enviar correo
+            # 4. Enviar correo
             enviar_email("Notificación de Nuevos Documentos", mensaje)
-
-            # 6. Actualizar el JSON con todos los documentos conocidos
-            guardar_datos_enviados(datos_enviados + nuevos_datos)
         else:
             print("📭 No hay documentos nuevos para enviar.")
     except Exception as e:
